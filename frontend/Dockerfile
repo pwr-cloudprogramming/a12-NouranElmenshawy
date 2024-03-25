@@ -1,7 +1,10 @@
-FROM nginx:alpine
+FROM busybox:1.35
 
-COPY ./Frontend /usr/share/nginx/html
+RUN adduser -D stud
+USER stud
+WORKDIR /home/stud
 
-EXPOSE 80
+COPY src/ .
 
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["busybox"]
+CMD ["httpd", "-f", "-v", "-p", "3000"]
