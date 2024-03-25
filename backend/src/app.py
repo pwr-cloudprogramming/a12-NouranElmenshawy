@@ -4,7 +4,7 @@ from flask_socketio import SocketIO, emit, join_room
 import time
 
 backend_dir = os.path.dirname(os.path.abspath(__file__))
-frontend_dir = os.path.join(backend_dir, '..', '..', 'frontend')
+frontend_dir = os.getenv('FRONTEND_DIR', 'frontend')
 
 app = Flask(__name__, template_folder=frontend_dir)  
 app.config['SECRET_KEY'] = 'secret!'
@@ -100,4 +100,5 @@ def handle_get_active_rooms():
     
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
-    socketio.run(app, host='0.0.0.0', port=port)
+    socketio.run(app, host='0.0.0.0', port=port, allow_unsafe_werkzeug=True)
+
