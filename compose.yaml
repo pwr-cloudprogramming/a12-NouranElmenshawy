@@ -1,4 +1,3 @@
-version: '2.0'
 services:
   frontend:
     image: myfrontend
@@ -6,11 +5,11 @@ services:
       context: frontend
       dockerfile: Dockerfile
     ports:
-      - 8081:3000
+      - "8082:3000"  # Change from 8081 to 8082
   backend:
     image: mybackend
     build:
       context: backend
       dockerfile: Dockerfile
     ports:
-      - 8080:8080
+      - "8080:8080"
