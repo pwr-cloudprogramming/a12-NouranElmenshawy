@@ -96,7 +96,7 @@ function joinGame() {
         });
         socket.on('active_rooms', function(data) {
             const activeRoomsElement = document.getElementById('active-rooms');
-            activeRoomsElement.innerHTML = '';  
+            activeRoomsElement.innerHTML = '';  // Clear the list before adding updated rooms
             data.rooms.forEach(room => addRoomToList(room));
         });
         
