@@ -1,13 +1,10 @@
-FROM python:3.8-slim
+FROM python:3.10-alpine
 
 WORKDIR /app
 
-COPY . /app
+COPY src/ .
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
-EXPOSE 5000
-
-ENV NAME World
-
-CMD ["python", "app.py"]
+ENTRYPOINT ["python3"]
+CMD ["app.py"]
