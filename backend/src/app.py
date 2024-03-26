@@ -5,6 +5,8 @@ import time
 
 backend_dir = os.path.dirname(os.path.abspath(__file__))
 frontend_dir = os.getenv('FRONTEND_DIR', 'frontend')
+#frontend_dir = os.path.join(backend_dir, '..', '..', 'frontend', 'src')
+
 
 app = Flask(__name__, template_folder=frontend_dir)  
 app.config['SECRET_KEY'] = 'secret!'
