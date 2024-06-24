@@ -4,6 +4,177 @@
     <meta charset="UTF-8">
     <title>Tic-Tac-Toe</title>
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .form-section {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"], input[type="password"] {
+            padding: 10px;
+            margin: 5px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            font-size: 16px;
+            width: calc(100% - 30px);
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .rooms-section {
+            margin-top: 20px;
+            background-color: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .rooms-section h2 {
+            color: #0277bd;
+        }
+
+        .rooms-list div {
+            padding: 10px;
+            background-color: #ffffff;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-left: 5px solid #0277bd;
+        }
+
+        .rooms-list div:hover {
+            background-color: #f0f0f0;
+        }
+
+        #board {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100px;
+            background-color: #fff;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .cell:hover {
+            background-color: #f0f0f0;
+            transform: scale(1.1);
+        }
+
+        #logout-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #ff4b5c;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        #logout-button:hover {
+            background-color: #d43f4e;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <button id="logout-button" onclick="logout()">Logout</button>
+    <div class="container" id="auth-container">
+        <h1>Tic-Tac-Toe</h1>
+        <div class="form-section" id="register">
+            <h2>Register</h2>
+            <input type="text" id="reg-username" placeholder="Username">
+            <input type="text" id="reg-email" placeholder="Email">
+            <input type="password" id="reg-password" placeholder="Password">
+            <button onclick="register()">Register</button>
+        </div>
+        <div class="form-section" id="confirm" style="display: none;">
+            <h2>Confirm Registration</h2>
+            <input type="text" id="confirm-code" placeholder="Confirmation Code">
+            <button onclick="confirmSignUp()">Confirm</button>
+        </div>
+        <div class="form-section" id="login">
+            <h2>Login</h2>
+            <input type="text" id="login-username" placeholder="Username">
+            <input type="password" id="login-password" placeholder="Password">
+            <button onclick="login()">Login</button>
+        </div>
+    </div>
+    <div class="container" id="game-container" style="display: none;">
+        <h1>Tic-Tac-Toe</h1>
+        <div class="form-section">
+            <input type="text" id="username" placeholder="Username">
+            <input type="text" id="room" placeholder="Room">
+            <button onclick="createRoom()">Create Room</button>
+            <button onclick="joinGame()">Join Game</button>
+        </div>
+        <div class="rooms-section">
+            <h2>Rooms Available</h2>
+            <div id="active-rooms" class="rooms-list"></div>
+        </div>
+        <div id="board"></div>
+    </div>
     <script>
         const socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
         let currentRoom = '';
@@ -15,7 +186,7 @@
                     alert('Waiting for another player...');
                 } else {
                     currentPlayer = data.turn;
-                    alert('Players Found, please click on Join Game ! Players: ' + data.players.join(', '));
+                    alert('Players Found, please click on Join Game! Players: ' + data.players.join(', '));
                     updateBoard(data.board);
                 }
             } else if (data.status === 'full') {
@@ -32,45 +203,163 @@
         });
 
         socket.on('game_over', function(data) {
-            
-    if (data.winner === 'Draw') {
-        alert('Game over, it\'s a draw!');
-    } else {
-        alert('Game over, ' + data.winner + ' wins!');
-    }
+    alert('Game over, ' + data.winner + ' wins!');
 });
-        
-function createRoom() {
-    const username = document.getElementById('username').value;
-    const room = document.getElementById('room').value;  // Get the custom room name
-    if (!username || !room) {
-        alert('Username and room name are required!');
-        return;
-    }
-    socket.emit('join', {'username': username, 'action': 'create', 'room': room});
-}
 
-socket.on('room_created', function(data) {
-    console.log(`New room created: ${data.room}`);
-    addRoomToList(data.room);
-});
-function addRoomToList(room) {
-    const activeRoomsElement = document.getElementById('active-rooms');
-    const roomElement = document.createElement('div');
-    roomElement.innerText = room;
-    roomElement.onclick = function() { joinRoom(room); };
-    activeRoomsElement.appendChild(roomElement);
-}
-function joinGame() {
-    const username = document.getElementById('username').value;
-    const room = document.getElementById('room').value;
-    if (!username || !room) {
-        alert('Username and room are required!');
-        return;
-    }
-    currentRoom = room;
-    socket.emit('join', {'username': username, 'room': room});
-}
+        socket.on('room_created', function(data) {
+            console.log(`New room created: ${data.room}`);
+            addRoomToList(data.room);
+        });
+
+        socket.on('active_rooms', function(data) {
+            const activeRoomsElement = document.getElementById('active-rooms');
+            activeRoomsElement.innerHTML = '';  // Clear the list before adding updated rooms
+            data.rooms.forEach(room => addRoomToList(room));
+        });
+
+        async function register() {
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    document.getElementById('register').style.display = 'none';
+                    document.getElementById('confirm').style.display = 'block';
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error('Error registering:', error);
+            }
+        }
+
+        async function confirmSignUp() {
+            const username = document.getElementById('reg-username').value;
+            const code = document.getElementById('confirm-code').value;
+
+            try {
+                const response = await fetch('/api/confirm', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, code })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Successfully confirmed registration!');
+                    document.getElementById('confirm').style.display = 'none';
+                    document.getElementById('login').style.display = 'block';
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error('Error confirming registration:', error);
+            }
+        }
+
+        async function login() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    localStorage.setItem('accessToken', data.AuthenticationResult.AccessToken);
+                    localStorage.setItem('refreshToken', data.AuthenticationResult.RefreshToken);
+                    console.log('Login successful:', data);
+                    alert('Login successful! You can now create or join a game.');
+                    document.getElementById('auth-container').style.display = 'none';
+                    document.getElementById('game-container').style.display = 'block';
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error('Error logging in:', error);
+            }
+        }
+
+        async function refreshAccessToken() {
+            try {
+                const refreshToken = localStorage.getItem('refreshToken');
+                const response = await fetch('/api/refresh-token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refreshToken })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    localStorage.setItem('accessToken', data.AuthenticationResult.AccessToken);
+                } else {
+                    console.error('Error refreshing token:', data.message);
+                }
+            } catch (error) {
+                console.error('Error refreshing token:', error);
+            }
+        }
+
+        async function makeAuthenticatedRequest(endpoint, options = {}) {
+            const accessToken = localStorage.getItem('accessToken');
+            if (!accessToken) {
+                throw new Error('No access token available');
+            }
+
+            const headers = {
+                ...options.headers,
+                Authorization: `Bearer ${accessToken}`,
+            };
+
+            const response = await fetch(endpoint, { ...options, headers });
+            if (response.status === 401) {
+                await refreshAccessToken();
+                return makeAuthenticatedRequest(endpoint, options);
+            }
+
+            return response;
+        }
+
+        async function logout() {
+            try {
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                document.getElementById('auth-container').style.display = 'block';
+                document.getElementById('game-container').style.display = 'none';
+                console.log('Logout successful');
+            } catch (error) {
+                console.error('Error logging out:', error);
+            }
+        }
+
+        async function createRoom() {
+            const username = document.getElementById('username').value;
+            const room = document.getElementById('room').value;
+            if (!username || !room) {
+                alert('Username and room name are required!');
+                return;
+            }
+            socket.emit('join', {'username': username, 'action': 'create', 'room': room});
+        }
+
+        async function joinGame() {
+            const username = document.getElementById('username').value;
+            const room = document.getElementById('room').value;
+            if (!username || !room) {
+                alert('Username and room are required!');
+                return;
+            }
+            currentRoom = room;
+            socket.emit('join', {'username': username, 'room': room});
+        }
 
         function makeMove(position) {
             if (currentPlayer === '') {
@@ -91,146 +380,37 @@ function joinGame() {
                 boardElement.appendChild(cellElement);
             });
         }
-        document.addEventListener('DOMContentLoaded', (event) => {
-            requestActiveRooms();
-        });
-        socket.on('active_rooms', function(data) {
-            const activeRoomsElement = document.getElementById('active-rooms');
-            activeRoomsElement.innerHTML = '';  // Clear the list before adding updated rooms
-            data.rooms.forEach(room => addRoomToList(room));
-        });
-        
-        function joinRoom(room) {
-            console.log('Joining room:', room); // For debugging purposes
-            document.getElementById('room').value = room;
-            joinGame();
-        }
-        
+
         function requestActiveRooms() {
             socket.emit('get_active_rooms');
         }
-        
-    
+
+        function addRoomToList(room) {
+            const activeRoomsElement = document.getElementById('active-rooms');
+            const roomElement = document.createElement('div');
+            roomElement.innerText = room;
+            roomElement.onclick = function() { joinRoom(room); };
+            activeRoomsElement.appendChild(roomElement);
+        }
+
+        function joinRoom(room) {
+            console.log('Joining room:', room);
+            document.getElementById('room').value = room;
+            joinGame();
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            requestActiveRooms();
+        });
+
         requestActiveRooms();
+
+        window.register = register;
+        window.confirmSignUp = confirmSignUp;
+        window.login = login;
+        window.logout = logout;
+        window.createRoom = createRoom;
+        window.joinGame = joinGame;
     </script>
-    <style>
-        
-
-
-        .container {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            font-family: 'Arial', sans-serif;
-            background-color: #f9f9f9;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
-        
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        
-        .user-inputs {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        input[type="text"] {
-            padding: 10px;
-            margin-right: 10px;
-            border: 2px solid #007bff;
-            border-radius: 5px;
-            font-size: 16px;
-            color: #333;
-        }
-        
-        button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            background-color: #007bff;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.1s;
-        }
-        
-        button:hover {
-            background-color: #0056b3;
-            transform: scale(1.05);
-        }
-        
-        #active-rooms-section {
-            margin-top: 20px;
-            background-color: #e3f2fd;
-            border: 1px solid #90caf9;
-            border-radius: 5px;
-            padding: 10px;
-        }
-        
-        #active-rooms-section h2 {
-            text-align: center;
-            color: #0277bd;
-        }
-        
-        .rooms-list div {
-            padding: 10px;
-            background-color: #ffffff;
-            margin: 5px 0;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            border-left: 5px solid #0277bd;
-        }
-        
-        .rooms-list div:hover {
-            background-color: #f0f0f0;
-        }
-        
-        #board {
-            margin-top: 20px;
-            display: grid;
-            grid-template-columns: repeat(3, 100px);
-            grid-template-rows: repeat(3, 100px);
-            gap: 5px;
-            justify-content: center;
-        }
-        
-        .cell {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100px;
-            background-color: #fff;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-            font-size: 24px;
-            color: #333;
-        }
-        
-        .cell:hover {
-            background-color: #f0f0f0;
-            transform: scale(1.1);
-        }
-        
-            
-        
-    </style>
-</head>
-<body>
-    Username: <input type="text" id="username" />
-    Room: <input type="text" id="room" />
-<button onclick="createRoom()">Create Room</button>
-<button onclick="joinGame()">Join Game</button>
-<div class="rooms-section">
-    <h2>Rooms Available</h2>
-    <div id="active-rooms" class="rooms-list"></div>
-</div>
-
-<div id="board"></div>
 </body>
 </html>
