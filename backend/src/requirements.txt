@@ -1,2 +1,6 @@
 Flask
 flask_socketio
+flask_cors
+boto3
+python-dotenv
+requests
