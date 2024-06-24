@@ -104,7 +104,7 @@ The architecture includes:
 - Managed database access restrictions to ensure secure communication between services.
 
 **Surprises:**
-- The simplicity and efficiency of integrating AWS services to build a robust backend for the application.
+- The simplicity and efficiency of integrating AWS services to build a robust backend for the application (but it's very complex at the berginning).
 
 **Database Choice:**
 - Chose DynamoDB for its scalability, flexibility, and performance, making it suitable for handling game results and ranking calculations.
