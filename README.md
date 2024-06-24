@@ -90,9 +90,6 @@ The architecture includes:
 - **API Gateway:** Endpoints for submitting game results and uploading profile pictures.
 - **SNS Topic:** `RankingNotifications` for sending ranking update notifications.
 
-**Application Screenshot:**
-- The running application showing player profiles with uploaded pictures and game results stored in the database.
-
 ### Reflections
 
 **Learnings:**
@@ -100,8 +97,9 @@ The architecture includes:
 - Learned how to securely handle file uploads and restrict access using IAM roles and security groups.
 
 **Obstacles Overcome:**
-- Overcame issues with securing S3 uploads using pre-signed URLs.
+- issues with securing S3 uploads but solution is using pre-signed URLs.
 - Managed database access restrictions to ensure secure communication between services.
+- Configuring global secondary indexes to allow querying game scores by players required a deep understanding of DynamoDB's indexing and querying capabilities.
 
 **Surprises:**
 - The simplicity and efficiency of integrating AWS services to build a robust backend for the application (but it's very complex at the berginning).
